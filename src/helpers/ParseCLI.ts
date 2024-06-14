@@ -20,6 +20,7 @@ export class ParseCLI {
       '--mode': String,
       '--volatility': String,
       '--debug': Boolean,
+      '--no-drop': Boolean, // default value "drop" is true, so the flag needs to be negated ("no-drop")
     })
 
     if (args._.length === 0) {
@@ -42,6 +43,7 @@ Please specify a command. Available commands: generate, version, deploy
     const defaultVolatility = (args['--volatility'] ||
       'IMMUTABLE') as Volatility
     const typesFilePath = args['--types-config-file'] || 'types.ts'
+    const drop = !args['--no-drop']
 
     return {
       command: args._[0] as Command,
@@ -57,6 +59,7 @@ Please specify a command. Available commands: generate, version, deploy
         mode,
         defaultVolatility,
         typesFilePath,
+        drop,
       },
     }
   }

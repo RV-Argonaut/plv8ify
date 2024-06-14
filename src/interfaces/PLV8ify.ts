@@ -15,6 +15,7 @@ export interface GetPLV8SQLFunctionsArgs {
   fallbackReturnType: string
   defaultVolatility: Volatility
   outputFolder: string
+  defaultDrop: boolean
 }
 
 export interface PLV8ify {

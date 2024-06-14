@@ -218,6 +218,7 @@ $plv8ify$ LANGUAGE plv8 IMMUTABLE STRICT;
 | set the TS->SQL type mapping for a parameter | `/** @plv8ify_param {<my_sql_type>} <my_param> */` | `/** @plv8ify_param {timestamptz} ts */` |
 | set the TS->SQL type mapping for the return type | `/** @plv8ify_returns {<SQL TYPE>} */` | `/** @plv8ify_returns {setof my_table} */` |
 | designate the function is a TRIGGER | `/** @plv8ify_trigger */` | `/** @plv8ify_trigger */` |
+| include/omit `DROP FUNCTION` per function | `/** @plv8ify_drop <true,false> */` | `/** @plv8ify_drop false */` |
 
 ## CLI Usage
 
@@ -245,6 +246,7 @@ Generate PLV8 functions for an input typescript file
 | --mode                  | 'inline', 'bundle' or 'start_proc'    | 'inline' will bundle the library in each function, both 'bundle' and 'start_proc' creates a `{prefix}_init` function that loads the library. 'bundle' adds a check to each function to call 'init' if required, whereas 'start_proc' is designed to be used with plv8.start_proc        | `inline`       |
 | --volatility            | 'IMMUTABLE' or 'STABLE' or 'VOLATILE' | Change the volatility of all the generated functions. To change volatility of a specific function use the jsdoc `/** @plv8ify_volatility STABLE` in the input typescript file (see `examples/turf-js/input.ts`).                                                                        | `IMMUTABLE`    |
 | --types-config-file     | String                                | Specify a custom types config file                                                                                                                                                                                                                                                      | types.ts       |
+| --drop                  | Boolean                               | Include a `DROP FUNCTION` in the sql output                                                                                                                                                                                                                                             | `true`         |
 
 ### Deploy
 

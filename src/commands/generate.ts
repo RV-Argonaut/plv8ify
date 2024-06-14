@@ -17,6 +17,7 @@ export async function generateCommand(
     mode,
     defaultVolatility,
     typesFilePath,
+    drop,
   } = CLI.config
 
   fs.mkdirSync(outputFolderPath, { recursive: true })
@@ -44,6 +45,7 @@ export async function generateCommand(
     pgFunctionDelimiter,
     fallbackReturnType,
     outputFolder: outputFolderPath,
+    defaultDrop: drop,
   })
 
   sqlFiles.forEach((sqlFile) => {

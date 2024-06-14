@@ -26,6 +26,7 @@ interface GetPLV8SQLFunctionArgs {
   bundledJs: string
   fallbackReturnType: string
   defaultVolatility: Volatility
+  defaultDrop: boolean
 }
 
 /** configuration for how a JS function should be transformed into a SQL function */
@@ -37,6 +38,7 @@ type FnSqlConfig = {
   sqlReturnType: string | null,
   customSchema: string,
   trigger: boolean,
+  drop: boolean | null,
 }
 
 export class PLV8ifyCLI implements PLV8ify {
@@ -144,6 +146,7 @@ export class PLV8ifyCLI implements PLV8ify {
     fallbackReturnType,
     defaultVolatility,
     outputFolder,
+    defaultDrop,
   }: GetPLV8SQLFunctionsArgs) {
     const fns = this.getExportedFunctions()
     const sqls = fns.map((fn) => {
@@ -157,6 +160,7 @@ export class PLV8ifyCLI implements PLV8ify {
           bundledJs,
           fallbackReturnType,
           defaultVolatility,
+          defaultDrop,
         }),
       }
     })
@@ -190,6 +194,7 @@ export class PLV8ifyCLI implements PLV8ify {
         bundledJs,
         defaultVolatility,
         fallbackReturnType: 'void',
+        defaultDrop,
       })
 
       const initFileName = this.getFileName(
@@ -238,6 +243,7 @@ export class PLV8ifyCLI implements PLV8ify {
       sqlReturnType: this.getTypeFromMap(fn.returnType) || null,
       customSchema: '',
       trigger: false,
+      drop: null,
     }
 
     // default param type mapping
@@ -263,6 +269,9 @@ export class PLV8ifyCLI implements PLV8ify {
       if ([ 'plv8ify_return', 'plv8ify_returns' ].includes(tag.name) && returnMatch) config.sqlReturnType = returnMatch[1]
 
       if (tag.name === 'plv8ify_trigger') config.trigger = true
+
+      if (tag.name === 'plv8ify_drop' && tag.commentText === 'true') config.drop = true
+      if (tag.name === 'plv8ify_drop' && tag.commentText === 'false') config.drop = false
     }
 
     // triggers don't have return types
@@ -279,13 +288,15 @@ export class PLV8ifyCLI implements PLV8ify {
     bundledJs,
     fallbackReturnType,
     defaultVolatility,
+    defaultDrop,
   }: GetPLV8SQLFunctionArgs) {
     let {
       customSchema,
       paramTypeMapping,
       volatility,
       sqlReturnType,
-      trigger
+      trigger,
+      drop,
     } = this.getFnSqlConfig(fn);
     if (!volatility) volatility = defaultVolatility
     if (!sqlReturnType) sqlReturnType = fallbackReturnType
@@ -300,7 +311,7 @@ export class PLV8ifyCLI implements PLV8ify {
       (customSchema ? customSchema + '.' : '') + scopePrefix + fn.name
 
     return [
-      `DROP FUNCTION IF EXISTS ${scopedName}(${sqlParametersString});`,
+      drop ?? defaultDrop ? `DROP FUNCTION IF EXISTS ${scopedName}(${sqlParametersString});` : '',
       `CREATE OR REPLACE FUNCTION ${scopedName}(${sqlParametersString}) RETURNS ${sqlReturnType} AS ${pgFunctionDelimiter}`,
       match(mode)
         .with('inline', () => bundledJs)
